@@ -2,7 +2,7 @@ import cartopy.crs as ccrs
 import numpy as np
 
 
-
+# fill in color on countries
 def loopFillColor(world, ax, countryList, color):
     for country in countryList:
         country_data = world[world['name'] == country]
@@ -10,6 +10,7 @@ def loopFillColor(world, ax, countryList, color):
             country_data.plot(ax=ax, color=color, edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
 
 
+# line with note words
 def lineMark(ax, horizontal_length, angle, line_length, lon, lat, direction1, direction2, content):
     if direction1 == 1:
         end_lon = lon + horizontal_length

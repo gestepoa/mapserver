@@ -66,8 +66,7 @@ def generate_nightshade_image():
     plt.rcParams['font.sans-serif'] = ['SimHei']
     plt.rcParams['axes.unicode_minus'] = False
 
-    full_path = os.path.join('data', 'worldmap', 'world.json')
-    world = gpd.read_file(full_path)
+    world = gpd.read_file('./data/worldmap/world.json')
     world = world.to_crs(ccrs.PlateCarree())
     fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Miller(central_longitude=0)})
     world.plot(ax=ax, color='lightblue', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
@@ -94,7 +93,7 @@ def generate_nightshade_image():
 
     ax.set_extent([-180, 180, -80, 90], crs=ccrs.PlateCarree())
     
-    output_path = os.path.join('./result', 'Nightshade.jpg')
+    output_path = os.path.join('./result', 'Nightshade.jpg').replace("\\", "/")
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
 

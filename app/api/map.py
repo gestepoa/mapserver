@@ -12,6 +12,10 @@ def generate_map():
 async def generate_map():
     try:
         output_path = generate_nightshade_image()
-        return {"success": "true", "local": output_path}
+        return {
+            "message": "success", 
+            "status": 200,
+            "local": output_path
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

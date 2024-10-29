@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Response, HTTPException
-from app.utils.map_utils import generate_poi_image, generate_nightshade_image
+from app.utils.map_utils import generate_poi_image, generate_nightshade_image, generate_circle_image
 
 router = APIRouter()
 
@@ -12,6 +12,18 @@ def generate_map():
 async def generate_map():
     try:
         output_path = generate_nightshade_image()
+        return {
+            "message": "success", 
+            "status": 200,
+            "local": output_path
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/circle_map/")
+async def generate_map():
+    try:
+        output_path = generate_circle_image()
         return {
             "message": "success", 
             "status": 200,

@@ -1,6 +1,7 @@
 # geodesy about...
 import geopandas as gpd
 from geopy.distance import geodesic
+from shapely.geometry import Point
 # cartopy about...
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -94,6 +95,49 @@ def generate_nightshade_image():
     ax.set_extent([-180, 180, -80, 90], crs=ccrs.PlateCarree())
     
     output_path = os.path.join('./result', 'Nightshade.jpg').replace("\\", "/")
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+    return output_path
+
+
+def generate_circle_image():
+    world = gpd.read_file('./data/worldmap/world.json')
+    world = world.to_crs(ccrs.PlateCarree())
+
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Miller(central_longitude=150)})
+    world.plot(ax=ax, color='none', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
+
+    # 定义点P1和点P2的经纬度
+    longitude1, latitude1 = 82.8083, 25.2167
+    longitude2, latitude2 = -165.658, -61.5917
+    points = [Point(longitude1, latitude1), Point(longitude2, latitude2)]
+    gdf = gpd.GeoDataFrame(index=[0, 1], crs=ccrs.PlateCarree(), geometry=points)
+
+    # 绘制点P1和点P2
+    gdf.plot(ax=ax, color='red', markersize=30, transform=ccrs.PlateCarree())
+    lats = np.linspace(-90, 90, 300)
+    lons = np.linspace(-180, 180, 600)
+    lon_grid, lat_grid = np.meshgrid(lons, lats)
+    distance_diff1 = np.zeros(lon_grid.shape)
+    distance_diff2 = np.zeros(lon_grid.shape)
+
+    # 计算每个网格点到目标点的球面距离
+    for i in range(lon_grid.shape[0]):
+        for j in range(lon_grid.shape[1]):
+            point = (lat_grid[i, j], lon_grid[i, j])
+            distance_diff1[i, j] = geodesic(point, (latitude1, longitude1)).kilometers
+            distance_diff2[i, j] = geodesic(point, (latitude2, longitude2)).kilometers
+
+    # 绘制等高线填充颜色
+    contourf1 = ax.contourf(lon_grid, lat_grid, distance_diff1, levels=[-1e10, 705, 1e10], colors=['lightgreen', 'none'], transform=ccrs.PlateCarree(), zorder=0)
+    contour1 = ax.contour(lon_grid, lat_grid, distance_diff1, levels=[705], colors='green', transform=ccrs.PlateCarree(), zorder=3)
+    contourf2 = ax.contourf(lon_grid, lat_grid, distance_diff2, levels=[-1e10, 10505, 1e10], colors=['lightblue', 'none'], transform=ccrs.PlateCarree(), zorder=0)
+    contour2 = ax.contour(lon_grid, lat_grid, distance_diff2, levels=[10505], colors='green', transform=ccrs.PlateCarree(), zorder=3)
+
+    ax.set_extent([180, -180, -80, 80], crs=ccrs.PlateCarree())
+    ax.tick_params(axis='both', which='both', length=0, labelsize=0)
+    output_path = os.path.join('./result', 'BillionPopulationCircle.jpg').replace("\\", "/")
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
 

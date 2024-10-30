@@ -101,7 +101,7 @@ def generate_nightshade_image():
     return output_path
 
 
-def generate_circle_image():
+def generate_circle_image(lon1, lat1, lon2, lat2):
     world = gpd.read_file('./data/worldmap/world.json')
     world = world.to_crs(ccrs.PlateCarree())
 
@@ -109,9 +109,9 @@ def generate_circle_image():
     world.plot(ax=ax, color='none', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
 
     # 定义点P1和点P2的经纬度
-    longitude1, latitude1 = 82.8083, 25.2167
-    longitude2, latitude2 = -165.658, -61.5917
-    points = [Point(longitude1, latitude1), Point(longitude2, latitude2)]
+    # longitude1, latitude1 = 82.8083, 25.2167
+    # longitude2, latitude2 = -165.658, -61.5917
+    points = [Point(lon1, lat1), Point(lon2, lat2)]
     gdf = gpd.GeoDataFrame(index=[0, 1], crs=ccrs.PlateCarree(), geometry=points)
 
     # 绘制点P1和点P2
@@ -126,8 +126,8 @@ def generate_circle_image():
     for i in range(lon_grid.shape[0]):
         for j in range(lon_grid.shape[1]):
             point = (lat_grid[i, j], lon_grid[i, j])
-            distance_diff1[i, j] = geodesic(point, (latitude1, longitude1)).kilometers
-            distance_diff2[i, j] = geodesic(point, (latitude2, longitude2)).kilometers
+            distance_diff1[i, j] = geodesic(point, (lat1, lon1)).kilometers
+            distance_diff2[i, j] = geodesic(point, (lat2, lon2)).kilometers
 
     # 绘制等高线填充颜色
     contourf1 = ax.contourf(lon_grid, lat_grid, distance_diff1, levels=[-1e10, 705, 1e10], colors=['lightgreen', 'none'], transform=ccrs.PlateCarree(), zorder=0)

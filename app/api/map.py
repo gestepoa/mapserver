@@ -4,11 +4,13 @@ from app.utils.map_utils import generate_poi_image, generate_nightshade_image, g
 
 router = APIRouter()
 
+class location(BaseModel):
+    lon: float
+    lat: float
+
 class CircleMap(BaseModel):
-    lon1: float
-    lat1: float
-    lon2: float
-    lat2: float
+    point1: location
+    point2: location
 
 @router.post("/poi_map/")
 def generate_map():
@@ -30,7 +32,7 @@ async def generate_map():
 @router.post("/circle_map/")
 async def generate_map(request: CircleMap):
     try:
-        output_path = generate_circle_image(request.lon1, request.lat1, request.lon2, request.lat2)
+        output_path = generate_circle_image(request.point1.lon, request.point1.lat, request.point2.lon, request.point2.lat)
         return {
             "message": "success", 
             "status": 200,

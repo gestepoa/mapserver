@@ -44,3 +44,22 @@ def lineMark(ax, horizontal_length, angle, line_length, lon, lat, direction1, di
         print('direction1 type error')
 
 
+# loop fill color in country list
+def loopFillColor(ax, world, countryList, color):
+    for country in countryList:
+        country_data = world[world['name'] == country]
+        if not country_data.empty:
+            country_data.plot(ax=ax, color=color, edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
+
+
+# loop draw point on earth
+def drawIslandCountry(ax, island_country, country_list, color):
+    latitudes = []
+    longitudes = []
+    for country in country_list:
+        if country in island_country:
+            coordinates = island_country[country]
+            latitudes.append(coordinates[0])
+            longitudes.append(coordinates[1])
+    ax.scatter(longitudes, latitudes, color=color,edgecolor='black', marker='o', zorder=10, transform=ccrs.PlateCarree())
+

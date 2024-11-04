@@ -5,10 +5,10 @@ from app.database.config import Base
 class MapPoint(Base):
     __tablename__ = "map_points"
 
-    id = Column(Integer, primary_key=True, comment="履历信息id")
-    spot_name = Column(String(255), nullable=False, unique=False, comment="履历信息id")
-    country_name = Column(String(255), nullable=True, comment="履历信息id")
-    note = Column(String(255), nullable=True, comment="履历信息id")
-    latitude = Column(Float, nullable=False, comment="履历信息id")
-    longitude = Column(Float, nullable=False, comment="履历信息id")
-    height = Column(Float, nullable=True, comment="履历信息id")
+    id = Column(Integer, primary_key=True, comment="id")
+    spot_name = Column(String(255), nullable=False, unique=False, comment="点位名称")
+    country_name = Column(String(255), nullable=True, comment="所属国家")
+    note = Column(String(255), nullable=True, comment="备注")
+    latitude = Column(Float, nullable=False, comment="纬度")
+    longitude = Column(Float, nullable=False, comment="经度")
+    height = Column(Float, nullable=True, comment="高程")

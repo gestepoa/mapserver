@@ -22,7 +22,7 @@ def create_point(point: PointCreate, db: Session = Depends(get_db)):
 @router.post("/map_points/query")
 async def query_map_points(point_query: PointQuery, db: Session = Depends(get_db)):
     if point_query.spot_name:
-        points = db.query(MapPoint).filter(MapPoint.spot_name == point_query.spot_name).all()
+        points = db.query(MapPoint).filter(MapPoint.spot_name.in_(point_query.spot_name)).all()
         return {"success": True, "data": points}
     return {"success": False, "message": "No spot name provided."}
 

@@ -26,7 +26,7 @@ class PointCreate(BaseModel):
     height: float | None = None
 
 class PointQuery(BaseModel):
-    spot_name: str | None = None
+    spot_name: list[str]
 
 class PointUpdate(BaseModel):
     id: int

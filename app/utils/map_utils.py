@@ -20,6 +20,9 @@ from app.schemas.schemas import CircleMap, FillinMap
 from app.utils.tools import loopFillColor, lineMark, loopFillColor, drawIslandCountry
 
 matplotlib.use('Agg')
+country_list = ['库克群岛','佛得角','格林纳达','多米尼克','所罗门群岛','密克罗尼西亚','帕劳','萨摩亚','圣马力诺','圣多美和普林西比','汤加','瓦努阿图',
+                '安道尔','库拉索','马尔代夫','马绍尔群岛','圣文森特和格林纳丁斯','塞舌尔','新加坡','圣基茨和尼维斯','科摩罗','图瓦卢']
+
 
 def generate_poi_image():
     plt.rcParams['font.sans-serif'] = ['SimHei']

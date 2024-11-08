@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, HTTPException, Depends
 from app.schemas.schemas import CircleMap, FillinMap, PointCreate, PointQuery, PointUpdate, PointDelete
-from app.utils.map_utils import generate_poi_image, generate_nightshade_image, generate_circle_image, fillin_color_image
+from app.utils.map_utils import generate_poi_image, generate_nightshade_image, generate_circle_image, fillin_color_image, fillin_color_image_pro
 #db
 from sqlalchemy.orm import Session
 from app.database.config import get_db
@@ -90,6 +90,19 @@ async def generate_map(request: CircleMap):
 async def generate_map(request: FillinMap):
     try:
         output_path = fillin_color_image(request)
+        return {
+            "message": "success", 
+            "status": 200,
+            "local": output_path
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/fillin_color_map/pro")
+async def generate_map(request: FillinMap, db: Session = Depends(get_db)):
+    try:
+        output_path = fillin_color_image_pro(request, db)
         return {
             "message": "success", 
             "status": 200,

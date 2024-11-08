@@ -53,13 +53,6 @@ def loopFillColor(ax, world, countryList, color):
 
 
 # loop draw point on earth
-def drawIslandCountry(ax, island_country, country_list, color):
-    latitudes = []
-    longitudes = []
-    for country in country_list:
-        if country in island_country:
-            coordinates = island_country[country]
-            latitudes.append(coordinates[0])
-            longitudes.append(coordinates[1])
+def drawIslandCountry(ax, longitudes, latitudes, color):
     ax.scatter(longitudes, latitudes, color=color,edgecolor='black', marker='o', zorder=10, transform=ccrs.PlateCarree())
 

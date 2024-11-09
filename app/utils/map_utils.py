@@ -176,7 +176,7 @@ def fillin_color_image(data: FillinMap):
 def fillin_color_image_pro(data: FillinMap, db: Session):
     plt.rcParams['font.sans-serif'] = ['SimHei','Times New Roman']
     plt.rcParams['axes.unicode_minus'] = False
-    world = gpd.read_file('./data/worldmap/world.json')
+    world = gpd.read_file('./data/worldmap/world_update.json')
     world = world.to_crs(ccrs.PlateCarree())
     fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Robinson(central_longitude=150)})
     world.plot(ax=ax, color='lightgray', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
@@ -201,7 +201,7 @@ def fillin_color_image_pro(data: FillinMap, db: Session):
                     lonList.append(point.longitude)
         drawIslandCountry(ax, lonList, latList, single.color)
 
-    legend = ax.legend(handles=legend_elements, loc='lower left', title='测试地图', title_fontsize='large', ncol=3, handleheight=1.5)
+    legend = ax.legend(handles=legend_elements, loc='lower left', title='图例', title_fontsize='large', ncol=3, handleheight=1.5)
     legend.get_frame().set_facecolor('lightgray')
     ax.tick_params(axis='both', which='both', length=0, labelsize=0)
     output_path = os.path.join('./result', 'fillinColorMap.jpg').replace("\\", "/")

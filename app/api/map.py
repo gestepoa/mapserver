@@ -31,12 +31,8 @@ async def query_map_points(point_query: PointQuery, db: Session = Depends(get_db
 def update_map_point(point_update: PointUpdate, db: Session = Depends(get_db)):
     updated_point = db.query(MapPoint).filter(MapPoint.id == point_update.id).first()
     if updated_point:
-        if point_update.spot_name:
-            updated_point.spot_name = point_update.spot_name
-        if point_update.latitude:
-            updated_point.latitude = point_update.latitude
-        if point_update.longitude:
-            updated_point.longitude = point_update.longitude
+        for key, value in point_update.dict(exclude_unset=True).items():
+            setattr(updated_point, key, value)
         db.commit()
         db.refresh(updated_point)
     if updated_point:

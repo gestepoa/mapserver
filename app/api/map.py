@@ -8,7 +8,7 @@ from app.database.model import MapPoint
 
 router = APIRouter()
 
-# curd api test
+# map_points curd api
 # add
 @router.post("/map_points/add", response_model=PointCreate)
 def create_point(point: PointCreate, db: Session = Depends(get_db)):
@@ -31,7 +31,7 @@ async def query_map_points(point_query: PointQuery, db: Session = Depends(get_db
 def update_map_point(point_update: PointUpdate, db: Session = Depends(get_db)):
     updated_point = db.query(MapPoint).filter(MapPoint.id == point_update.id).first()
     if updated_point:
-        for key, value in point_update.dict(exclude_unset=True).items():
+        for key, value in point_update.model_dump(exclude_unset=True).items():
             setattr(updated_point, key, value)
         db.commit()
         db.refresh(updated_point)

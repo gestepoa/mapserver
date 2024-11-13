@@ -2,7 +2,8 @@ from fastapi import APIRouter, Response, HTTPException, Depends
 from app.schemas.schemas import CircleMap, FillinMap, PointCreate, PointQuery, PointUpdate, PointDelete
 from app.utils.map_utils import generate_poi_image, generate_nightshade_image, generate_circle_image, fillin_color_image, fillin_color_image_pro
 #db
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.database.config import get_db
 from app.database.model import MapPoint
 
@@ -11,47 +12,54 @@ router = APIRouter()
 # map_points curd api
 # add
 @router.post("/map_points/add", response_model=PointCreate)
-def create_point(point: PointCreate, db: Session = Depends(get_db)):
+async def create_point(point: PointCreate, db: AsyncSession = Depends(get_db)):
     db_point = MapPoint(**point.model_dump())
     db.add(db_point)
-    db.commit()
-    db.refresh(db_point)
+    await db.commit()
+    await db.refresh(db_point)
     return db_point
 
 # query
 @router.post("/map_points/query")
-async def query_map_points(point_query: PointQuery, db: Session = Depends(get_db)):
+async def query_map_points(point_query: PointQuery, db: AsyncSession = Depends(get_db)):
     if point_query.spot_name:
-        points = db.query(MapPoint).filter(MapPoint.spot_name.in_(point_query.spot_name)).all()
+        result = await db.execute(
+            select(MapPoint).where(MapPoint.spot_name.in_(point_query.spot_name))
+        )
+        points = result.scalars().all()
         return {"success": True, "data": points}
     return {"success": False, "message": "No spot name provided."}
 
 # update
 @router.post("/map_points/update")
-def update_map_point(point_update: PointUpdate, db: Session = Depends(get_db)):
-    updated_point = db.query(MapPoint).filter(MapPoint.id == point_update.id).first()
+async def update_map_point(point_update: PointUpdate, db: AsyncSession = Depends(get_db)):
+    query = select(MapPoint).where(MapPoint.id == point_update.id)
+    result = await db.execute(query)
+    updated_point = result.scalars().first()
     if updated_point:
         for key, value in point_update.model_dump(exclude_unset=True).items():
             setattr(updated_point, key, value)
-        db.commit()
-        db.refresh(updated_point)
+        await db.commit()
+        await db.refresh(updated_point)
     if updated_point:
         return {"success": "true", "data": updated_point}
     raise HTTPException(status_code=404, detail="Point not found")
 
 @router.post("/map_points/delete")
-def delete_map_point(point_delete: PointDelete, db: Session = Depends(get_db)):
-    point = db.query(MapPoint).filter(MapPoint.id == point_delete.id).first()
+async def delete_map_point(point_delete: PointDelete, db: AsyncSession = Depends(get_db)):
+    query = select(MapPoint).where(MapPoint.id == point_delete.id)
+    result = await db.execute(query)
+    point = result.scalars().first()
     if point:
-        db.delete(point)
-        db.commit()
+        await db.delete(point)
+        await db.commit()
         return {"success": "true", "message": "Point deleted successfully"}
     raise HTTPException(status_code=404, detail="Point not found")
  
 
 # map api
 @router.post("/poi_map/")
-def generate_map():
+async def generate_map():
     img_buffer = generate_poi_image()
     return Response(content=img_buffer.getvalue(), media_type="image/jpeg")
 
@@ -96,9 +104,9 @@ async def generate_map(request: FillinMap):
 
 
 @router.post("/fillin_color_map/pro")
-async def generate_map(request: FillinMap, db: Session = Depends(get_db)):
+async def generate_map(request: FillinMap, db: AsyncSession = Depends(get_db)):
     try:
-        output_path = fillin_color_image_pro(request, db)
+        output_path = await fillin_color_image_pro(request, db)
         return {
             "message": "success", 
             "status": 200,

@@ -19,8 +19,9 @@ import datetime
 from app.schemas.schemas import CircleMap, FillinMap, PointQuery
 from app.utils.tools import loopFillColor, lineMark, loopFillColor, drawIslandCountry
 # database about...
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.model import MapPoint
+from sqlalchemy.future import select
 
 matplotlib.use('Agg')
 target_country_list = ['库克群岛','佛得角','格林纳达','多米尼克','所罗门群岛','密克罗尼西亚','帕劳','萨摩亚','圣马力诺','圣多美和普林西比','汤加','瓦努阿图',
@@ -173,7 +174,7 @@ def fillin_color_image(data: FillinMap):
     return output_path
 
 
-def fillin_color_image_pro(data: FillinMap, db: Session):
+async def fillin_color_image_pro(data: FillinMap, db: AsyncSession):
     plt.rcParams['font.sans-serif'] = ['SimHei','Times New Roman']
     plt.rcParams['axes.unicode_minus'] = False
     world = gpd.read_file('./data/worldmap/world_update.json')
@@ -194,7 +195,9 @@ def fillin_color_image_pro(data: FillinMap, db: Session):
             if singleCountry in target_country_list:
                 spotList.append(singleCountry)
         if len(spotList) > 0:
-            points = db.query(MapPoint).filter(MapPoint.spot_name.in_(spotList)).all()
+            # points = db.query(MapPoint).filter(MapPoint.spot_name.in_(spotList)).all()
+            result = await db.execute(select(MapPoint).where(MapPoint.spot_name.in_(spotList)))
+            points = result.scalars().all()
             if len(points) > 0:
                 for point in points:
                     latList.append(point.latitude)

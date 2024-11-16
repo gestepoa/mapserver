@@ -15,6 +15,7 @@ import numpy as np
 from io import BytesIO
 import os
 import datetime
+import json
 # utils about...
 from app.schemas.schemas import CircleMap, FillinMap, PointQuery
 from app.utils.tools import loopFillColor, lineMark, loopFillColor, drawIslandCountry
@@ -213,3 +214,21 @@ async def fillin_color_image_pro(data: FillinMap, db: AsyncSession):
     plt.close(fig)
     return output_path
 
+
+async def draw_polyline(geojson_data):
+    plt.rcParams['font.sans-serif'] = ['SimHei','Times New Roman']
+    plt.rcParams['axes.unicode_minus'] = False
+    world = gpd.read_file('./data/worldmap/world.json')
+    world = world.to_crs(ccrs.PlateCarree())
+    border = gpd.read_file(geojson_data)
+    border = border.to_crs(ccrs.PlateCarree())
+
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Robinson(central_longitude=150)})
+    world.plot(ax=ax, color='lightgray', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
+    border.plot(ax=ax, color='red', linewidth=0.8, transform=ccrs.PlateCarree())
+
+    ax.tick_params(axis='both', which='both', length=0, labelsize=0)
+    output_path = os.path.join('./result', 'boderMap.jpg').replace("\\", "/")
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+    return output_path

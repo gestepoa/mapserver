@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Response, HTTPException, Depends
+from fastapi import APIRouter, Response, HTTPException, Depends, File, UploadFile
 from app.schemas.schemas import CircleMap, FillinMap, PointCreate, PointQuery, PointUpdate, PointDelete
-from app.utils.map_utils import generate_poi_image, generate_nightshade_image, generate_circle_image, fillin_color_image, fillin_color_image_pro
+from app.utils.map_utils import generate_poi_image, generate_nightshade_image, generate_circle_image, fillin_color_image, fillin_color_image_pro, draw_polyline
 #db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.database.config import get_db
 from app.database.model import MapPoint
+# sys
+import os
 
 router = APIRouter()
 
@@ -114,3 +116,27 @@ async def generate_map(request: FillinMap, db: AsyncSession = Depends(get_db)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.post("/polyline_map/")
+async def upload_geojson(file: UploadFile = File(...)):
+    if file.content_type != "application/geo+json" and file.content_type != "application/json":
+        raise HTTPException(status_code=400, detail="Invalid file type. Only GeoJSON files are accepted.")
+
+    temp_file_path = f"./data/temp/temp_{file.filename}"
+
+    try:
+        with open(temp_file_path, "wb") as f:
+            f.write(await file.read())
+  
+        processed_data = await draw_polyline(temp_file_path)
+        
+        return {"success": True, "features_count": processed_data}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing file: {e}")
+    
+    finally:
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+

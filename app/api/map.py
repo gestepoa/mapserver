@@ -93,9 +93,9 @@ async def generate_map(request: CircleMap):
     
 
 @router.post("/fillin_color_map/")
-async def generate_map(request: FillinMap):
+async def generate_map(request: FillinMap, db: AsyncSession = Depends(get_db)):
     try:
-        output_path = fillin_color_image(request)
+        output_path = await fillin_color_image(request, db)
         return {
             "message": "success", 
             "status": 200,

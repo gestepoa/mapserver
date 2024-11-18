@@ -18,7 +18,7 @@ import datetime
 import json
 # utils about...
 from app.schemas.schemas import CircleMap, FillinMap, PointQuery
-from app.utils.tools import loopFillColor, lineMark, loopFillColor, drawIslandCountry
+from app.utils.tools import loopFillColor, lineMark, loopFillColor, drawIslandCountry, loopFillColorShp
 # database about...
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.model import MapPoint
@@ -27,7 +27,7 @@ from sqlalchemy.future import select
 matplotlib.use('Agg')
 target_country_list = ['库克群岛','佛得角','格林纳达','多米尼克','所罗门群岛','密克罗尼西亚','帕劳','萨摩亚','圣马力诺','圣多美和普林西比','汤加','瓦努阿图',
                 '安道尔','库拉索','马尔代夫','马绍尔群岛','圣文森特和格林纳丁斯','塞舌尔','新加坡','圣基茨和尼维斯','科摩罗','图瓦卢', '特立尼达和多巴哥', 
-                "巴巴多斯", "巴哈马", "斐济", "毛里求斯", "安提瓜和巴布达", "摩纳哥"]
+                "巴巴多斯", "巴哈马", "斐济", "毛里求斯", "安提瓜和巴布达", "摩纳哥", "梵蒂冈", "马耳他", "列支敦士登"]
 
 
 def generate_poi_image():
@@ -154,22 +154,40 @@ def generate_circle_image(lon1, lat1, lon2, lat2):
     return output_path
 
 
-def fillin_color_image(data: FillinMap):
+async def fillin_color_image(data: FillinMap, db: AsyncSession):
     plt.rcParams['font.sans-serif'] = ['SimHei','Times New Roman']
     plt.rcParams['axes.unicode_minus'] = False
-    world = gpd.read_file('./data/worldmap/world.json')
+    world = gpd.read_file('./data/worldmap_shp/World_countries.shp')
     world = world.to_crs(ccrs.PlateCarree())
-    fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Robinson(central_longitude=150)})
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Miller(central_longitude=0)})
     world.plot(ax=ax, color='lightgray', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
 
     legend_elements = []
     for single in data.countryList:
-        loopFillColor(ax, world, single.country, single.color)
+        # large country fillin color
+        loopFillColorShp(ax, world, single.country, single.color)
         legend_elements.append(Line2D([0], [0], marker='s', color='w', markerfacecolor=single.color, markersize=15, label=single.note, linestyle='None'))
+        #tiny country pointing
+        spotList = []
+        latList = []
+        lonList = []
+        for singleCountry in single.country:
+            if singleCountry in target_country_list:
+                spotList.append(singleCountry)
+        if len(spotList) > 0:
+            result = await db.execute(select(MapPoint).where(MapPoint.spot_name.in_(spotList)))
+            points = result.scalars().all()
+            if len(points) > 0:
+                for point in points:
+                    latList.append(point.latitude)
+                    lonList.append(point.longitude)
+        drawIslandCountry(ax, lonList, latList, single.color)
 
-    legend = ax.legend(handles=legend_elements, loc='lower left', title='测试地图', title_fontsize='large', ncol=3, handleheight=1.5)
+    legend = ax.legend(handles=legend_elements, loc='lower left', title='图例', title_fontsize='large', ncol=3, handleheight=1.5)
     legend.get_frame().set_facecolor('lightgray')
     ax.tick_params(axis='both', which='both', length=0, labelsize=0)
+    if data.area == '欧洲':
+        ax.set_extent([45, -25, 33, 68], crs=ccrs.PlateCarree())
     output_path = os.path.join('./result', 'fillinColorMap.jpg').replace("\\", "/")
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close(fig)

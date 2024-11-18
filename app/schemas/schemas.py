@@ -16,6 +16,7 @@ class countryList(BaseModel):
 
 class FillinMap(BaseModel):
     countryList: list[countryList]
+    area: str | None = None
 
 # map_points curd model
 class PointCreate(BaseModel):

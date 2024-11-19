@@ -182,8 +182,9 @@ async def fillin_color_image(data: FillinMap, db: AsyncSession):
                     latList.append(point.latitude)
                     lonList.append(point.longitude)
         drawIslandCountry(ax, lonList, latList, single.color)
+    legend_elements.append(Line2D([0], [0], marker='s', color='w', markerfacecolor='lightgray', markersize=15, label='no data', linestyle='None'))
 
-    legend = ax.legend(handles=legend_elements, loc='lower left', title='图例', title_fontsize='large', ncol=3, handleheight=1.5)
+    legend = ax.legend(handles=legend_elements, loc='lower left', title='图例', title_fontsize='large', ncol=2, handleheight=1.5)
     legend.get_frame().set_facecolor('lightgray')
     ax.tick_params(axis='both', which='both', length=0, labelsize=0)
     if data.area == '欧洲':

@@ -25,9 +25,15 @@ from app.database.model import MapPoint
 from sqlalchemy.future import select
 
 matplotlib.use('Agg')
-target_country_list = ['库克群岛','佛得角','格林纳达','多米尼克','所罗门群岛','密克罗尼西亚','帕劳','萨摩亚','圣马力诺','圣多美和普林西比','汤加','瓦努阿图',
-                '安道尔','库拉索','马尔代夫','马绍尔群岛','圣文森特和格林纳丁斯','塞舌尔','新加坡','圣基茨和尼维斯','科摩罗','图瓦卢', '特立尼达和多巴哥', 
-                "巴巴多斯", "巴哈马", "斐济", "毛里求斯", "安提瓜和巴布达", "摩纳哥", "梵蒂冈", "马耳他", "列支敦士登"]
+target_country_list = [
+    '库克群岛','佛得角','格林纳达','多米尼克','所罗门群岛','密克罗尼西亚','帕劳','萨摩亚','圣马力诺','圣多美和普林西比','汤加','瓦努阿图',
+    '安道尔','库拉索','马尔代夫','马绍尔群岛','圣文森特和格林纳丁斯','塞舌尔','新加坡','圣基茨和尼维斯','科摩罗','图瓦卢', '特立尼达和多巴哥', 
+    "巴巴多斯", "巴哈马", "斐济", "毛里求斯", "安提瓜和巴布达", "摩纳哥", "梵蒂冈", "马耳他", "列支敦士登"
+]
+area_dict = {
+    "欧洲": [45, -25, 33, 68],
+    "亚洲": [25, 155, -12, 65]
+}
 
 
 def generate_poi_image():
@@ -228,6 +234,9 @@ async def fillin_color_image_pro(data: FillinMap, db: AsyncSession):
     legend = ax.legend(handles=legend_elements, loc='lower left', title='图例', title_fontsize='large', ncol=3, handleheight=1.5)
     legend.get_frame().set_facecolor('lightgray')
     ax.tick_params(axis='both', which='both', length=0, labelsize=0)
+    areaPara = area_dict.get(data.area)
+    if areaPara is not None:
+        ax.set_extent(areaPara, crs=ccrs.PlateCarree())
     output_path = os.path.join('./result', 'fillinColorMap.jpg').replace("\\", "/")
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close(fig)

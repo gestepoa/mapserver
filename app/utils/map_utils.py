@@ -28,7 +28,8 @@ matplotlib.use('Agg')
 target_country_list = [
     '库克群岛','佛得角','格林纳达','多米尼克','所罗门群岛','密克罗尼西亚','帕劳','萨摩亚','圣马力诺','圣多美和普林西比','汤加','瓦努阿图',
     '安道尔','库拉索','马尔代夫','马绍尔群岛','圣文森特和格林纳丁斯','塞舌尔','新加坡','圣基茨和尼维斯','科摩罗','图瓦卢', '特立尼达和多巴哥', 
-    "巴巴多斯", "巴哈马", "斐济", "毛里求斯", "安提瓜和巴布达", "摩纳哥", "梵蒂冈", "马耳他", "列支敦士登"
+    "巴巴多斯", "巴哈马", "斐济", "毛里求斯", "安提瓜和巴布达", "摩纳哥", "梵蒂冈", "马耳他", "列支敦士登", "阿鲁巴", "巴林", "百慕大", "英属维尔京群岛", 
+    "美属维尔京群岛", "开曼群岛", "关岛", "香港", "澳门", "北马里亚纳群岛", "波多黎各", "圣卢西亚", "圣马丁", "特克斯和凯科斯群岛"
 ]
 area_dict = {
     "欧洲": [45, -25, 33, 68],
@@ -206,7 +207,7 @@ async def fillin_color_image_pro(data: FillinMap, db: AsyncSession):
     plt.rcParams['axes.unicode_minus'] = False
     world = gpd.read_file('./data/worldmap/world_update.json')
     world = world.to_crs(ccrs.PlateCarree())
-    fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Robinson(central_longitude=150)})
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Robinson(central_longitude=0)})
     world.plot(ax=ax, color='lightgray', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
 
     legend_elements = []

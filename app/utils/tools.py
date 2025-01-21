@@ -49,7 +49,7 @@ def loopFillColor(ax, world, countryList, color):
     for country in countryList:
         country_data = world[world['name'] == country]
         if not country_data.empty:
-            country_data.plot(ax=ax, color=color, edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
+            country_data.plot(ax=ax, color=color, edgecolor='white', linewidth=0.8, transform=ccrs.PlateCarree())
 
 
 def loopFillColorShp(ax, world, countryList, color):

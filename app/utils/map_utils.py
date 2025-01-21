@@ -207,8 +207,8 @@ async def fillin_color_image_pro(data: FillinMap, db: AsyncSession):
     plt.rcParams['axes.unicode_minus'] = False
     world = gpd.read_file('./data/worldmap/world_update.json')
     world = world.to_crs(ccrs.PlateCarree())
-    fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Robinson(central_longitude=0)})
-    world.plot(ax=ax, color='lightgray', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Robinson(central_longitude=150)})
+    world.plot(ax=ax, color='darkgray', edgecolor='white', linewidth=0.8, transform=ccrs.PlateCarree())
 
     legend_elements = []
     for single in data.countryList:

@@ -18,3 +18,18 @@ class MapPoint(Base):
     latitude = Column(Float, nullable=False, comment="纬度")
     longitude = Column(Float, nullable=False, comment="经度")
     height = Column(Float, nullable=True, comment="高程")
+
+
+class CountryInfo(Base):
+    __tablename__ = "country_info"
+
+    id = Column(Integer, primary_key=True, comment="id")
+    country_name = Column(String(255), nullable=False, unique=False, comment="国家名称")
+    capital = Column(String(255), nullable=True, unique=False, comment="首都")
+    biggest_city= Column(String(255), nullable=True, unique=False, comment="最大城市")
+    population = Column(String(255), nullable=True, unique=False, comment="人口")
+    en_name = Column(String(255), nullable=True, comment="英文名称")
+    continental = Column(String(255), nullable=True, comment="所属大洲")
+    district = Column(String(255), nullable=True, comment="所属地区")
+    note = Column(String(255), nullable=True, comment="备注")
+

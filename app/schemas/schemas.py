@@ -17,6 +17,11 @@ class countryList(BaseModel):
 class FillinMap(BaseModel):
     countryList: list[countryList]
     area: str | None = None
+    range: list[int] | None = None
+    boderColor: str | None = None
+    worldColor: str | None = None
+    boderWidth: float | None = None
+    legendTitle: str | None = None
 
 # map_points curd model
 class PointCreate(BaseModel):

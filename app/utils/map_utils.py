@@ -164,10 +164,14 @@ def generate_circle_image(lon1, lat1, lon2, lat2):
 async def fillin_color_image(data: FillinMap, db: AsyncSession):
     plt.rcParams['font.sans-serif'] = ['SimHei','Times New Roman']
     plt.rcParams['axes.unicode_minus'] = False
+    worldColor = data.worldColor if data.worldColor else 'darkgray'
+    boderColor = data.boderColor if data.boderColor else 'black'
+    lineWidth = data.boderWidth if data.boderWidth else 0.3
+    legendTitle = data.legendTitle if data.legendTitle else '图例'
     world = gpd.read_file('./data/worldmap_shp/World_countries.shp')
     world = world.to_crs(ccrs.PlateCarree())
     fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Miller(central_longitude=0)})
-    world.plot(ax=ax, color='lightgray', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
+    world.plot(ax=ax, color=worldColor, edgecolor=boderColor, linewidth=lineWidth, transform=ccrs.PlateCarree())
 
     legend_elements = []
     for single in data.countryList:
@@ -189,13 +193,15 @@ async def fillin_color_image(data: FillinMap, db: AsyncSession):
                     latList.append(point.latitude)
                     lonList.append(point.longitude)
         drawIslandCountry(ax, lonList, latList, single.color)
-    legend_elements.append(Line2D([0], [0], marker='s', color='w', markerfacecolor='lightgray', markersize=15, label='no data', linestyle='None'))
+    legend_elements.append(Line2D([0], [0], marker='s', color='w', markerfacecolor='darkgray', markersize=15, label='no data', linestyle='None'))
 
-    legend = ax.legend(handles=legend_elements, loc='lower left', title='图例', title_fontsize='large', ncol=2, handleheight=1.5)
+    legend = ax.legend(handles=legend_elements, loc='lower left', title=legendTitle, ncol=1, handleheight=1.5, title_fontsize=16, prop={'size': 14})
     legend.get_frame().set_facecolor('lightgray')
     ax.tick_params(axis='both', which='both', length=0, labelsize=0)
-    if data.area == '欧洲':
-        ax.set_extent([45, -25, 33, 68], crs=ccrs.PlateCarree())
+    # range setting
+    range = [45, -25, 33, 68] if data.range == '欧洲' else [180,-180,-85, 85]
+    range = data.range if data.range else [180,-180,-85, 85]
+    ax.set_extent(range, crs=ccrs.PlateCarree())
     output_path = os.path.join('./result', 'fillinColorMap.jpg').replace("\\", "/")
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close(fig)

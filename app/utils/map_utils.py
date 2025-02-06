@@ -17,11 +17,11 @@ import os
 import datetime
 import json
 # utils about...
-from app.schemas.schemas import CircleMap, FillinMap, PointQuery
+from app.schemas.schemas import CircleMap, FillinMap, PointQuery, SeparateMap
 from app.utils.tools import loopFillColor, lineMark, loopFillColor, drawIslandCountry, loopFillColorShp
 # database about...
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database.model import MapPoint
+from app.database.model import MapPoint, POI
 from sqlalchemy.future import select
 
 matplotlib.use('Agg')
@@ -158,6 +158,55 @@ def generate_circle_image(lon1, lat1, lon2, lat2):
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
 
+    return output_path
+
+
+async def generate_separate_image(data: SeparateMap, db: AsyncSession):
+    plt.rcParams['font.sans-serif'] = ['SimHei']
+    plt.rcParams['axes.unicode_minus'] = False
+
+    full_path = os.path.join('data', 'worldmap', 'world.json')
+    world = gpd.read_file(full_path)
+    world = world.to_crs(ccrs.PlateCarree())
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Miller(central_longitude=150)})
+    world.plot(ax=ax, color='none', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
+
+    latList = []
+    lonList = []
+    coorList = []
+    result = await db.execute(select(POI).where(POI.name.in_(data.name)))
+    points = result.scalars().all()
+    if len(points) > 0:
+        for point in points:
+            latList.append(point.latitude)
+            lonList.append(point.longitude)
+            coorList.append((point.latitude, point.longitude))
+    lats = np.linspace(-90, 90, 600)
+    lons = np.linspace(-180, 180, 1200)
+    lon_grid, lat_grid = np.meshgrid(lons, lats)
+    nearest_city = np.zeros(lon_grid.shape)
+
+    for i in range(lon_grid.shape[0]):
+        for j in range(lon_grid.shape[1]):
+            point = (lat_grid[i, j], lon_grid[i, j])
+            distances = [geodesic(point, city).kilometers for city in coorList]
+            nearest_city[i, j] = np.argmin(distances)
+    
+    colors = ['lightblue', 'lightgreen', 'lightcoral', 'lightyellow', 'lightpink', 'lightgray', 'lightcyan', 'green', 'cyan', 'deepskyblue', 'pink']
+    contourf = ax.contourf(lon_grid, lat_grid, nearest_city, levels=np.arange(-0.5, len(data.name), 1), colors=colors, transform=ccrs.PlateCarree(), zorder=0)
+    contour = ax.contour(lon_grid, lat_grid, nearest_city, levels=np.arange(0.5, 0.5+len(data.name)-1, 1), colors='k', transform=ccrs.PlateCarree())
+    ax.scatter(lonList, latList, color='black', marker='o', zorder=5, transform=ccrs.PlateCarree())
+
+    legend_elements = []
+    for i in range(len(data.name)):
+        legend_elements.append(Line2D([0], [0], marker='s', color='w', markerfacecolor=colors[i], markersize=15, label=data.name[i], linestyle='None'))
+    legend = ax.legend(handles=legend_elements, loc='lower left', title='图例', ncol=1, handleheight=1.5, title_fontsize=16, prop={'size': 14})
+    legend.get_frame().set_facecolor('lightgray')
+    ax.tick_params(axis='both', which='both', length=0, labelsize=0)
+
+    output_path = os.path.join('./result', 'separateMap.jpg').replace("\\", "/")
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
     return output_path
 
 

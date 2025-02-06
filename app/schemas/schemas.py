@@ -8,6 +8,11 @@ class CircleMap(BaseModel):
     point1: location
     point2: location
 
+
+class SeparateMap(BaseModel):
+    name: list[str]
+
+
 # fillin map model
 class countryList(BaseModel):
     country: list[str]

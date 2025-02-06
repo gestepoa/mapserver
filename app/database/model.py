@@ -33,3 +33,15 @@ class CountryInfo(Base):
     district = Column(String(255), nullable=True, comment="所属地区")
     note = Column(String(255), nullable=True, comment="备注")
 
+
+class POI(Base):
+    __tablename__ = "point_of_interest"
+
+    id = Column(Integer, primary_key=True, comment="id")
+    latitude = Column(Float, nullable=False, comment="纬度")
+    longitude = Column(Float, nullable=False, comment="经度")
+    height = Column(Float, nullable=True, comment="高程")
+    name = Column(String(255), nullable=True, comment="名称")
+    name_en = Column(String(255), nullable=True, comment="英文名称")
+    note = Column(String(255), nullable=True, comment="备注")
+

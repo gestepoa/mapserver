@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, HTTPException, Depends, File, UploadFile
-from app.schemas.schemas import CircleMap, FillinMap, PointCreate, PointQuery, PointUpdate, PointDelete
-from app.utils.map_utils import generate_poi_image, generate_nightshade_image, generate_circle_image, fillin_color_image, fillin_color_image_pro, draw_polyline
+from app.schemas.schemas import CircleMap, FillinMap, PointCreate, PointQuery, PointUpdate, PointDelete, SeparateMap
+from app.utils.map_utils import generate_poi_image, generate_nightshade_image, generate_circle_image, fillin_color_image, fillin_color_image_pro, draw_polyline, generate_separate_image
 #db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -85,6 +85,19 @@ async def generate_map():
 async def generate_map(request: CircleMap):
     try:
         output_path = generate_circle_image(request.point1.lon, request.point1.lat, request.point2.lon, request.point2.lat)
+        return {
+            "message": "success", 
+            "status": 200,
+            "local": output_path
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.post("/separate_map/")
+async def generate_map(request: SeparateMap, db: AsyncSession = Depends(get_db)):
+    try:
+        output_path = await generate_separate_image(request, db)
         return {
             "message": "success", 
             "status": 200,

@@ -23,6 +23,7 @@ from app.utils.tools import loopFillColor, lineMark, loopFillColor, drawIslandCo
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.model import MapPoint, POI
 from sqlalchemy.future import select
+from sqlalchemy import case
 
 matplotlib.use('Agg')
 target_country_list = [
@@ -171,16 +172,19 @@ async def generate_separate_image(data: SeparateMap, db: AsyncSession):
     fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.Miller(central_longitude=150)})
     world.plot(ax=ax, color='none', edgecolor='black', linewidth=0.3, transform=ccrs.PlateCarree())
 
+    order_condition = case({name: index for index, name in enumerate(data.name)}, value=POI.name,)
+
     latList = []
     lonList = []
     coorList = []
-    result = await db.execute(select(POI).where(POI.name.in_(data.name)))
+    result = await db.execute(select(POI).where(POI.name.in_(data.name)).order_by(order_condition))
     points = result.scalars().all()
     if len(points) > 0:
         for point in points:
             latList.append(point.latitude)
             lonList.append(point.longitude)
             coorList.append((point.latitude, point.longitude))
+            print([point.latitude, point.longitude])
     lats = np.linspace(-90, 90, 600)
     lons = np.linspace(-180, 180, 1200)
     lon_grid, lat_grid = np.meshgrid(lons, lats)
@@ -202,6 +206,7 @@ async def generate_separate_image(data: SeparateMap, db: AsyncSession):
         legend_elements.append(Line2D([0], [0], marker='s', color='w', markerfacecolor=colors[i], markersize=15, label=data.name[i], linestyle='None'))
     legend = ax.legend(handles=legend_elements, loc='lower left', title='图例', ncol=1, handleheight=1.5, title_fontsize=16, prop={'size': 14})
     legend.get_frame().set_facecolor('lightgray')
+    ax.set_extent([180, -180, -80, 80], crs=ccrs.PlateCarree())
     ax.tick_params(axis='both', which='both', length=0, labelsize=0)
 
     output_path = os.path.join('./result', 'separateMap.jpg').replace("\\", "/")
